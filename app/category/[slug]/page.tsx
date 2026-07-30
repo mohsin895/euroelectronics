@@ -1,0 +1,10 @@
+import { CategoryPageClient } from '@/components/category-page-client'
+
+export default async function CategoryPage({
+                                               params,
+                                           }: {
+    params: Promise<{ slug: string }>
+}) {
+    const { slug } = await params
+    return <CategoryPageClient slug={slug} />
+}

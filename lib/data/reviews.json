@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "productId": 1,
+    "userId": 1,
+    "userName": "Ayesha Khan",
+    "rating": 5,
+    "title": "Excellent mustard oil",
+    "comment": "Pure quality, great taste and aroma. Perfect for cooking.",
+    "createdAt": "2026-06-15T10:30:00Z"
+  },
+  {
+    "id": 2,
+    "productId": 2,
+    "userId": 2,
+    "userName": "Fariha Akter Tumpa",
+    "rating": 5,
+    "title": "Best honey I've found",
+    "comment": "Very pure and natural. Highly recommend for health benefits.",
+    "createdAt": "2026-06-14T14:20:00Z"
+  },
+  {
+    "id": 3,
+    "productId": 2,
+    "userId": 3,
+    "userName": "Shahriar Khan Abir",
+    "rating": 4,
+    "title": "Good quality honey",
+    "comment": "Fresh and tasty. Worth the price.",
+    "createdAt": "2026-06-13T09:15:00Z"
+  },
+  {
+    "id": 4,
+    "productId": 4,
+    "userId": 4,
+    "userName": "Mohammad Hasan",
+    "rating": 5,
+    "title": "Premium ghee",
+    "comment": "Authentic taste, perfect ghee for cooking. Will buy again!",
+    "createdAt": "2026-06-12T11:45:00Z"
+  },
+  {
+    "id": 5,
+    "productId": 4,
+    "userId": 5,
+    "userName": "Nadia Patel",
+    "rating": 5,
+    "title": "Best ghee product",
+    "comment": "Pure cow ghee, great quality. Highly satisfied.",
+    "createdAt": "2026-06-11T15:30:00Z"
+  },
+  {
+    "id": 6,
+    "productId": 6,
+    "userId": 6,
+    "userName": "Rahman Ahmed",
+    "rating": 4,
+    "title": "Good cashew nuts",
+    "comment": "Fresh and delicious nuts. Perfect for snacking.",
+    "createdAt": "2026-06-10T13:00:00Z"
+  },
+  {
+    "id": 7,
+    "productId": 11,
+    "userId": 7,
+    "userName": "Jasmin Begum",
+    "rating": 5,
+    "title": "Premium basmati rice",
+    "comment": "Long grains, great aroma. Perfect for special occasions.",
+    "createdAt": "2026-06-09T08:45:00Z"
+  },
+  {
+    "id": 8,
+    "productId": 1,
+    "userId": 8,
+    "userName": "Karim Khan",
+    "rating": 4,
+    "title": "Good quality oil",
+    "comment": "Pure and fresh. Great for health-conscious cooking.",
+    "createdAt": "2026-06-08T16:20:00Z"
+  },
+  {
+    "id": 9,
+    "productId": 18,
+    "userId": 9,
+    "userName": "Sadia Islam",
+    "rating": 5,
+    "title": "Best almonds",
+    "comment": "Fresh, crunchy and delicious. Very nutritious.",
+    "createdAt": "2026-06-07T10:10:00Z"
+  },
+  {
+    "id": 10,
+    "productId": 3,
+    "userId": 1,
+    "userName": "Ayesha Khan",
+    "rating": 4,
+    "title": "African honey quality",
+    "comment": "Good taste and quality. Worth trying.",
+    "createdAt": "2026-06-06T12:30:00Z"
+  }
+]

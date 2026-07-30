@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "name": "Ayesha Khan",
+    "email": "ayesha@example.com",
+    "password": "password123",
+    "phone": "+880 1712345678",
+    "role": "customer",
+    "address": "Dhaka, Bangladesh",
+    "createdAt": "2026-01-15T10:30:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Fariha Akter Tumpa",
+    "email": "fariha@example.com",
+    "password": "password123",
+    "phone": "+880 1798765432",
+    "role": "customer",
+    "address": "Chittagong, Bangladesh",
+    "createdAt": "2026-02-10T14:20:00Z"
+  },
+  {
+    "id": 3,
+    "name": "Shahriar Khan Abir",
+    "email": "shahriar@example.com",
+    "password": "password123",
+    "phone": "+880 1654321098",
+    "role": "customer",
+    "address": "Sylhet, Bangladesh",
+    "createdAt": "2026-03-05T09:15:00Z"
+  },
+  {
+    "id": 4,
+    "name": "Mohammad Hasan",
+    "email": "hasan@example.com",
+    "password": "password123",
+    "phone": "+880 1745678901",
+    "role": "customer",
+    "address": "Khulna, Bangladesh",
+    "createdAt": "2026-04-12T11:45:00Z"
+  },
+  {
+    "id": 5,
+    "name": "Nadia Patel",
+    "email": "nadia@example.com",
+    "password": "password123",
+    "phone": "+880 1834567890",
+    "role": "customer",
+    "address": "Rajshahi, Bangladesh",
+    "createdAt": "2026-05-08T15:30:00Z"
+  },
+  {
+    "id": 6,
+    "name": "Rahman Ahmed",
+    "email": "rahman@example.com",
+    "password": "password123",
+    "phone": "+880 1923456789",
+    "role": "customer",
+    "address": "Barisal, Bangladesh",
+    "createdAt": "2026-01-20T13:00:00Z"
+  },
+  {
+    "id": 7,
+    "name": "Jasmin Begum",
+    "email": "jasmin@example.com",
+    "password": "password123",
+    "phone": "+880 1765432109",
+    "role": "customer",
+    "address": "Mymensingh, Bangladesh",
+    "createdAt": "2026-02-28T08:45:00Z"
+  },
+  {
+    "id": 8,
+    "name": "Karim Khan",
+    "email": "karim@example.com",
+    "password": "password123",
+    "phone": "+880 1654321876",
+    "role": "customer",
+    "address": "Rangpur, Bangladesh",
+    "createdAt": "2026-03-18T16:20:00Z"
+  },
+  {
+    "id": 9,
+    "name": "Sadia Islam",
+    "email": "sadia@example.com",
+    "password": "password123",
+    "phone": "+880 1876543210",
+    "role": "customer",
+    "address": "Dinajpur, Bangladesh",
+    "createdAt": "2026-04-25T10:10:00Z"
+  },
+  {
+    "id": 10,
+    "name": "Admin User",
+    "email": "admin@example.com",
+    "password": "admin123",
+    "phone": "+880 1900000000",
+    "role": "admin",
+    "address": "Dhaka, Bangladesh",
+    "createdAt": "2025-12-01T00:00:00Z"
+  }
+]

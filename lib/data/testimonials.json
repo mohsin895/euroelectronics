@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "Ayesha Khan",
+    "title": "Banker",
+    "testimonial": "ছোট গ্রোসারি থেকে আঞ্জুর করা আমার আশা অবসর দীর্ঘ কোনাকুটি আর ঘুরতে পড়েছি, এরপর থেকে সবসময় এখানে অর্ডার করি। একদম নির্ভরযোগ্য ও সস্তি।",
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 2,
+    "name": "Fariha Akter Tumpa",
+    "title": "Entrepreneur",
+    "testimonial": "এই অ্যাপ্লিকেশনে অসাধারণ পণ্যের বৈচিত্র্য পাওয়া যায়! আমার বাজার দরকার তার সব কিছুই এখানে রয়েছে।",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 3,
+    "name": "Shahriar Khan Abir",
+    "title": "Service Holder",
+    "testimonial": "I don't like ghee, but my father really loves it. So I bought some ghee for him. He said this ghee is the best he has ever had",
+    "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 4,
+    "name": "Mohammad Hasan",
+    "title": "Business Owner",
+    "testimonial": "Perfect quality products with fast delivery. The customer service team is very helpful and responsive to queries.",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2e?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 5,
+    "name": "Nadia Patel",
+    "title": "Homemaker",
+    "testimonial": "Best online store for organic products. I trust their quality and always recommend to friends and family.",
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29331?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 6,
+    "name": "Rahman Ahmed",
+    "title": "Student",
+    "testimonial": "Great prices and authentic products. The delivery was on time and everything was fresh.",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2f?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 7,
+    "name": "Jasmin Begum",
+    "title": "Doctor",
+    "testimonial": "I recommend this store to all my patients for quality health food products.",
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29332?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 8,
+    "name": "Karim Khan",
+    "title": "Chef",
+    "testimonial": "Excellent selection of spices and ingredients. Professional cooking requires quality products.",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f3a?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 9,
+    "name": "Sadia Islam",
+    "title": "Nutritionist",
+    "testimonial": "As a nutritionist, I appreciate the organic and pure products available here.",
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29333?w=100&h=100&fit=crop"
+  },
+  {
+    "id": 10,
+    "name": "Hafizur Rahman",
+    "title": "Farmer",
+    "testimonial": "Great to see agricultural products getting proper market value. Keep supporting local farmers!",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f3b?w=100&h=100&fit=crop"
+  }
+]

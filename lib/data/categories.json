@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "Oil & Ghee",
+    "slug": "oil-ghee",
+    "description": "Premium quality cooking oils and ghee",
+    "icon": "oil"
+  },
+  {
+    "id": 2,
+    "name": "Honey",
+    "slug": "honey",
+    "description": "Pure and organic honey varieties",
+    "icon": "honey"
+  },
+  {
+    "id": 3,
+    "name": "Dates",
+    "slug": "dates",
+    "description": "Fresh and delicious dates",
+    "icon": "dates"
+  },
+  {
+    "id": 4,
+    "name": "Spices",
+    "slug": "spices",
+    "description": "Aromatic and flavorful spices",
+    "icon": "spices"
+  },
+  {
+    "id": 5,
+    "name": "Nuts & Seeds",
+    "slug": "nuts-seeds",
+    "description": "Nutritious nuts and seeds",
+    "icon": "nuts"
+  },
+  {
+    "id": 6,
+    "name": "Beverages",
+    "slug": "beverages",
+    "description": "Organic beverages and drinks",
+    "icon": "beverage"
+  },
+  {
+    "id": 7,
+    "name": "Rice",
+    "slug": "rice",
+    "description": "Premium rice varieties",
+    "icon": "rice"
+  },
+  {
+    "id": 8,
+    "name": "Flours & Lentils",
+    "slug": "flours-lentils",
+    "description": "Organic flours and lentils",
+    "icon": "flour"
+  },
+  {
+    "id": 9,
+    "name": "Organics",
+    "slug": "organics",
+    "description": "Certified organic products",
+    "icon": "organic"
+  },
+  {
+    "id": 10,
+    "name": "Certified",
+    "slug": "certified",
+    "description": "Certified food products",
+    "icon": "certified"
+  }
+]

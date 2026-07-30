@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": "Glarvest",
+    "slug": "glarvest",
+    "description": "Premium organic products"
+  },
+  {
+    "id": 2,
+    "name": "Khejuri",
+    "slug": "khejuri",
+    "description": "Traditional authentic products"
+  },
+  {
+    "id": 3,
+    "name": "Shomi",
+    "slug": "shomi",
+    "description": "Quality food essentials"
+  },
+  {
+    "id": 4,
+    "name": "Honeyraj",
+    "slug": "honeyraj",
+    "description": "Pure honey and bee products"
+  },
+  {
+    "id": 5,
+    "name": "SIS",
+    "slug": "sis",
+    "description": "Brown sugar and sweeteners"
+  },
+  {
+    "id": 6,
+    "name": "Gawa",
+    "slug": "gawa",
+    "description": "Pure ghee products"
+  },
+  {
+    "id": 7,
+    "name": "African Organic",
+    "slug": "african-organic",
+    "description": "African organic products"
+  },
+  {
+    "id": 8,
+    "name": "Deshi",
+    "slug": "deshi",
+    "description": "Local traditional products"
+  },
+  {
+    "id": 9,
+    "name": "Royal",
+    "slug": "royal",
+    "description": "Premium quality products"
+  },
+  {
+    "id": 10,
+    "name": "Organic Plus",
+    "slug": "organic-plus",
+    "description": "Certified organic solutions"
+  }
+]
