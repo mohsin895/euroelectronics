@@ -13,7 +13,12 @@ import { useAuth } from "@/contexts/auth-context"
 
 type Step = "details" | "verify"
 
-
+function splitName(fullName: string) {
+    const parts = fullName.trim().split(/\s+/)
+    const f_name = parts[0] ?? ""
+    const l_name = parts.slice(1).join(" ") || undefined
+    return { f_name, l_name }
+}
 
 export default function RegisterPage() {
     const router = useRouter()
@@ -22,7 +27,7 @@ export default function RegisterPage() {
     const [step, setStep] = useState<Step>("details")
     const [token, setToken] = useState<string | null>(null)
 
-    const [name, setFullName] = useState("")
+    const [fullName, setFullName] = useState("")
     const [phone, setPhone] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -43,10 +48,10 @@ export default function RegisterPage() {
         }
 
         setLoading(true)
-
+        const { f_name, l_name } = splitName(fullName)
         const res = await signupUser({
-            name,
-
+            f_name,
+            l_name,
             phone: phone.trim(),
             email: email.trim() || undefined,
             password,
@@ -141,7 +146,7 @@ export default function RegisterPage() {
     return (
         <AuthShell
             eyebrow="Member access // 02"
-            title="Join  Eggs & Spices."
+            title="Join the garage."
             description="Create an account to track orders, save your gear sizes and get early access to new drops."
             gaugeLabel="Sign-up"
             gaugeValue={0.5}
@@ -158,7 +163,7 @@ export default function RegisterPage() {
                     label="Full name"
                     name="name"
                     placeholder="Your name"
-                    value={name}
+                    value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
                     autoComplete="name"

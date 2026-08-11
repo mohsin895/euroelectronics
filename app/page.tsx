@@ -1,136 +1,204 @@
-"use client";
+import siteData from "@/data/site.json"
+import type { SiteData } from "@/lib/types"
+import { SiteHeader } from "@/components/site-header"
+import { HeroSection } from "@/components/hero-section"
+import { CategoriesSection } from "@/components/categories-section"
+import { FlashSaleSection, type FlashSaleDeal } from "@/components/flash-sale-section"
+import { ProductSectionBlock, type ApiProductSection } from "@/components/product-section-block"
+import { FeaturesBar } from "@/components/features-bar"
+import { SiteFooter } from "@/components/site-footer"
+import { FloatingButtons } from "@/components/floating-buttons"
+import { Brand } from "@/components/brand"
 
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+import { getSocialLinks } from "@/lib/getSocials"
+import type { Footer } from "@/lib/types"
 
-import { FloatingCart } from "@/components/floating-cart";
+const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN ?? ""
+const data = siteData as SiteData
 
-import { useEffect, useState } from "react";
-
-import { CategorySlider } from "@/components/category";
-import ProductSection from "@/components/products-section";
-
-import BestSellingProduct from "@/components/best-selling-product";
-import { BrandSlider } from "@/components/brands";
-import { HeroSection } from "@/components/hero-section";
-import { ProductCarousel } from "@/components/Productcarousel";
-
-interface Testimonial {
-  id: number;
-  name: string;
-  title: string;
-  testimonial: string;
+// ─── Types ─────────────────────────────────────────────────────────────────────
+interface ChildCategory {
+    id: number
+    name: string
+    slug: string
 }
 
-export default function Home() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+interface SubCategory {
+    id: number
+    name: string
+    slug: string
+    child_categories: ChildCategory[]
+}
 
-  useEffect(() => {
-    // Fetch categories
+export interface ApiCategory {
+    id: number
+    name: string
+    slug: string
+    order_level: number
+    icon: string | null
+    cover_image: string | null
+    banner: string | null
+    sub_categories: SubCategory[]
+}
 
-    // Fetch testimonials
-    fetch("/api/testimonials")
-      .then((res) => res.json())
-      .then((data) => setTestimonials(data.testimonials))
-      .catch((err) => console.error("[v0] Failed to fetch testimonials:", err));
-  }, []);
+export interface BrandLinks {
+    website?: string | null
+    facebook?: string | null
+    instagram?: string | null
+    [key: string]: string | null | undefined
+}
 
-  const nextTestimonial = () => {
-    setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
-  };
+export interface Brand {
+    id: number
+    name: string
+    slug: string
+    logo: string | null
+    links?: BrandLinks
+}
 
-  const prevTestimonial = () => {
-    setCurrentTestimonialIndex(
-      (prev) => (prev - 1 + testimonials.length) % testimonials.length,
-    );
-  };
+export interface Slider {
+    photo: string
+    url: string
+}
 
-  return (
-    <>
-      <Header />
-      <main className="min-h-screen">
-        {/* Hero Section with Carousel */}
-        <section className=" bg-white ">
-          <div className=" mx-auto">
-            <HeroSection />
-          </div>
-        </section>
-        <CategorySlider />
+export interface Banner {
+    photo: string
+    url: string
+}
 
-        {/* Featured Categories */}
-        <BestSellingProduct />
-        <BrandSlider />
-        {/* Featured Products */}
-        <ProductSection />
-        <ProductCarousel />
+// Static parts of the footer (link lists, newsletter copy, etc.) still come
+// from site.json / hardcoded copy. Only `socials` is resolved dynamically
+// from business-settings at request time — see getSocialLinks().
+const staticFooterData: Omit<Footer, "socials"> = {
+    linksTitle: "প্রয়োজনীয় লিংক",
+    links: [
+        { label: "আমাদের সাথে যোগাযোগ করুন", url: "/page/contact" },
+        { label: "Order Procedure", url: "/page/order-procedure" },
+        { label: "Delivery Rules", url: "/page/delivery-rules" },
+        { label: "Return Policy", url: "/page/return-policy" },
+    ],
+    infoTitle: "INFORMATION",
+    info: [
+        { label: "সব পণ্য", url: "/shop" },
+        { label: "Delivery Rules", url: "/page/delivery-rules" },
+        { label: "Warranty", url: "/page/warranty" },
+        { label: "Terms & Conditions", url: "/page/terms-conditions" },
+        { label: "Privacy Policy", url: "/page/privacy-policy" },
+    ],
+    newsletterTitle: "NEWSLETTER",
+    newsletterText: "Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.",
+    socialTitle: "FOLLOW US ON",
+    supportLabel: "কাস্টমার সাপোর্ট",
+    copyright: "Copyright © 2026 Moto Empire BD. All Rights Reserved.",
+    developer: "Nelsistech",
+}
 
-        {/* Testimonials */}
-        {/*{testimonials.length > 0 && (*/}
-        {/*  <section className="py-12 md:py-16 px-4 md:px-6 bg-white">*/}
-        {/*    <div className="max-w-4xl mx-auto">*/}
-        {/*      <h2 className="text-3xl font-bold text-center mb-2 text-foreground">*/}
-        {/*        What Our Customers Say*/}
-        {/*      </h2>*/}
-        {/*      <div className="w-12 h-1 bg-primary mx-auto mb-12"></div>*/}
+const brand = {
+    name: "Moto Empire",
+    subtitle: "Moto Empire.",
+    phone: "01732206841",
+    email: "bdmotoempire@gmail.com",
+    address: "274/3, Khandaker Plaza, 60 Feet Main Road, Mirpur, Dhaka-1216",
+}
 
-        {/*      <div className="relative">*/}
-        {/*        <div className="bg-muted rounded-lg p-8 md:p-12">*/}
-        {/*          <p className="text-lg text-foreground mb-6 italic">*/}
-        {/*            &quot;{testimonials[currentTestimonialIndex].testimonial}&quot;*/}
-        {/*          </p>*/}
-        {/*          <div className="flex items-center gap-4">*/}
-        {/*            <div className="w-14 h-14 bg-primary/20 rounded-full flex-shrink-0"></div>*/}
-        {/*            <div>*/}
-        {/*              <p className="font-semibold text-foreground">*/}
-        {/*                {testimonials[currentTestimonialIndex].name}*/}
-        {/*              </p>*/}
-        {/*              <p className="text-sm text-muted-foreground">*/}
-        {/*                {testimonials[currentTestimonialIndex].title}*/}
-        {/*              </p>*/}
-        {/*            </div>*/}
-        {/*          </div>*/}
-        {/*        </div>*/}
+// ─── Generic fetcher ───────────────────────────────────────────────────────────
+async function apiFetch<T>(path: string, fallback: T): Promise<T> {
+    const url = `${DOMAIN}/${path}`
+    try {
+        console.log(`[fetch] ${url}`)
+        const res = await fetch(url, { next: { revalidate: 60 } })
+        if (!res.ok) {
+            console.error(`[fetch] ${url} → ${res.status} ${res.statusText}`)
+            return fallback
+        }
+        const json = await res.json()
+        console.log(`[fetch] ${url} → success:${json.success}`)
+        return json
+    } catch (err) {
+        console.error(`[fetch] ${url} → ERROR:`, err)
+        return fallback
+    }
+}
 
-        {/*        /!* Navigation Buttons *!/*/}
-        {/*        <div className="flex justify-center gap-4 mt-6">*/}
-        {/*          <button*/}
-        {/*            onClick={prevTestimonial}*/}
-        {/*            className="p-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-colors"*/}
-        {/*          >*/}
-        {/*            ←*/}
-        {/*          </button>*/}
-        {/*          <button*/}
-        {/*            onClick={nextTestimonial}*/}
-        {/*            className="p-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-colors"*/}
-        {/*          >*/}
-        {/*            →*/}
-        {/*          </button>*/}
-        {/*        </div>*/}
+// ─── Server-side fetchers ───────────────────────────────────────────────────────
+async function getCategories(): Promise<ApiCategory[]> {
+    const json = await apiFetch<{ success: boolean; data: ApiCategory[] }>(
+        "categories", { success: false, data: [] }
+    )
+    console.log(json);
+    return json.success && Array.isArray(json.data) ? json.data : []
+}
 
-        {/*        /!* Pagination *!/*/}
-        {/*        <div className="flex justify-center gap-2 mt-4">*/}
-        {/*          {testimonials.map((_, index) => (*/}
-        {/*            <button*/}
-        {/*              key={index}*/}
-        {/*              onClick={() => setCurrentTestimonialIndex(index)}*/}
-        {/*              className={`w-2 h-2 rounded-full transition-colors ${*/}
-        {/*                index === currentTestimonialIndex*/}
-        {/*                  ? 'bg-primary'*/}
-        {/*                  : 'bg-border'*/}
-        {/*              }`}*/}
-        {/*            />*/}
-        {/*          ))}*/}
-        {/*        </div>*/}
-        {/*      </div>*/}
-        {/*    </div>*/}
-        {/*  </section>*/}
-        {/*)}*/}
-      </main>
-      <Footer />
+async function getBrands(): Promise<Brand[]> {
+    const json = await apiFetch<{ success: boolean; data: Brand[] }>(
+        "brands", { success: false, data: [] }
+    )
+    return json.success && Array.isArray(json.data) ? json.data : []
+}
+async function getSliders(): Promise<Slider[]> {
+    const json = await apiFetch<{ success: boolean; data: Slider[] }>(
+        "sliders", { success: false, data: [] }
+    )
+    return json.success && Array.isArray(json.data) ? json.data : []
+}
 
-      {/* Floating Cart Widget */}
-      <FloatingCart />
-    </>
-  );
+async function getBanner(): Promise<Banner | null> {
+    const json = await apiFetch<{ success: boolean; data: Banner[] }>(
+        "banners-one", { success: false, data: [] }
+    )
+    return json.success && json.data?.length ? json.data[0] : null
+}
+
+async function getFlashDeals(): Promise<FlashSaleDeal[]> {
+    const json = await apiFetch<{ success: boolean; data: FlashSaleDeal[] }>(
+        "flash-deals/info", { success: false, data: [] }
+    )
+    return json.success && Array.isArray(json.data) ? json.data : []
+}
+
+async function getProductSections(): Promise<ApiProductSection[]> {
+    const json = await apiFetch<{ success: boolean; data: ApiProductSection[] }>(
+        "categories/products", { success: false, data: [] }
+    )
+
+    return json.success && Array.isArray(json.data)
+        ? json.data.filter((s) => s.products.length > 0)
+        : []
+}
+
+// ─── Page ───────────────────────────────────────────────────────────────────────
+export default async function HomePage() {
+    const [categories, sliders, banner, flashDeals, sections, brands, socials] = await Promise.all([
+        getCategories(),
+        getSliders(),
+        getBanner(),
+        getFlashDeals(),
+        getProductSections(),
+        getBrands(),
+        getSocialLinks(),
+    ])
+
+    const footer: Footer = {
+        ...staticFooterData,
+        socials,
+    }
+
+    return (
+        <div className="min-h-screen bg-background">
+            <SiteHeader brand={data.brand} categories={categories} />
+            <main>
+                <HeroSection sliders={sliders} banner={banner} />
+
+                <CategoriesSection categories={categories} />
+                <FlashSaleSection deals={flashDeals} />
+                {sections.map((section) => (
+                    <ProductSectionBlock key={section.name} section={section} />
+                ))}
+                <Brand brands={brands} />
+                <FeaturesBar features={data.features} />
+            </main>
+            <SiteFooter brand={data.brand} footer={footer} />
+            <FloatingButtons />
+        </div>
+    )
 }

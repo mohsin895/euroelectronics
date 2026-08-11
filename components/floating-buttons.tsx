@@ -13,7 +13,7 @@ export function FloatingButtons() {
     }, [])
 
     const whatsappMessage = encodeURIComponent("Hi! I'd like to know more about your services.")
-    const whatsappHref = `https://wa.me/8801727742555?text=${whatsappMessage}`
+    const whatsappHref = `https://wa.me/8801732206841?text=${whatsappMessage}`
 
     return (
         <div className="fixed bottom-6 right-5 z-50 flex flex-col items-center gap-3">

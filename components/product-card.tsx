@@ -1,144 +1,235 @@
-"use client";
+"use client"
 
-import { useCart } from "@/lib/cart-context";
-import { ShoppingCart, Star } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
+import { useState } from "react"
+import Image from "next/image"
+import { Lock, ShoppingCart } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useCart } from "@/lib/cart-context"  // ← only useCart, nothing else
+import { fbqTrack } from "@/lib/fpixel"
 
-interface ProductCardProps {
-  id: number;
-  name: string;
-  slug: string;
-  price: number;
-  originalPrice: number;
-  image: string;
-  badge?: string;
-  rating: number;
-  reviews: number;
+export interface ApiStock {
+    id: number
+    product_id: number
+    variant: string
+    sku: string | null
+    price: number
+    qty: number
+}
+
+export interface ApiProduct {
+    id: number
+    slug: string
+    name: string
+    current_stock: number
+    thumbnail_image: string | null
+    has_discount: boolean
+    discount: number
+    discount_type: "amount" | "percent"
+    stroked_price: string
+    main_price: string
+    rating: number
+    tag: string
+    brand_id: number | null
+    stocks: ApiStock[]
+}
+
+function parseVariants(stocks: ApiStock[] | undefined): { label: string; options: string[] } {
+    if (!stocks?.length) return { label: "", options: [] }
+    const withVariant = stocks.filter((s) => s.variant?.trim())
+    if (!withVariant.length) return { label: "", options: [] }
+    const hasDash = withVariant.some((s) => s.variant.includes("-"))
+    if (hasDash) {
+        const parts = withVariant.map((s) => {
+            const idx = s.variant.lastIndexOf("-")
+            return { label: s.variant.slice(0, idx), value: s.variant.slice(idx + 1) }
+        })
+        const firstLabel = parts[0].label
+        const allSameLabel = parts.every((p) => p.label === firstLabel)
+        const label = allSameLabel ? firstLabel : "Variant"
+        const options = parts.map((p) => p.value).filter((v, i, arr) => arr.indexOf(v) === i)
+        return { label, options }
+    }
+    const options = withVariant.map((s) => s.variant.trim()).filter((v, i, arr) => arr.indexOf(v) === i)
+    return { label: "Variant", options }
+}
+
+function parsePrice(str: string): number {
+    const cleaned = str.replace(/[^\d.]/g, "")
+    return parseFloat(cleaned) || 0
 }
 
 export function ProductCard({
-  id,
-  name,
-  slug,
-  price,
-  originalPrice,
-  image,
-  badge,
-  rating,
-  reviews,
-}: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
-  const { addItem } = useCart();
+                                product,
+                                showAddToCart = false,
+                            }: {
+    product: ApiProduct
+    showAddToCart?: boolean
+}) {
+    const { addItem, addItemAndOpen } = useCart()  // ← destructure from useCart()
+    const router = useRouter()
+    const { label, options } = parseVariants(product.stocks)
+    const variantRequired = options.length > 0
 
-  // Only treat this as "discounted" if the original price is actually higher.
-  // Avoids showing a redundant strikethrough price / 0% badge on regular items.
-  const hasDiscount = originalPrice > price;
-  const discountPercent = hasDiscount
-    ? Math.round(((originalPrice - price) / originalPrice) * 100)
-    : 0;
+    const [selectedVariant, setSelectedVariant] = useState("")
+    const [variantError, setVariantError]       = useState(false)
+    const [shake, setShake]                     = useState(false)
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsAdding(true);
+    const outOfStock =
+        product.current_stock === 0 &&
+        (!product.stocks?.length || product.stocks.every((s) => s.qty === 0))
 
-    try {
-      addItem({
-        id,
-        name,
-        price,
-        quantity: 1,
-        image,
-        stock: 100,
-      });
-    } finally {
-      setIsAdding(false);
+    // Resolve price/sku/stock for the currently selected variant, falling back
+    // to the product-level defaults when there's no variant to match.
+    function resolveStock() {
+        if (!variantRequired) return undefined
+        return product.stocks.find((s) => s.variant === selectedVariant)
     }
-  };
 
-  return (
-    <Link href={`/product/${slug}`}>
-      <div className="group bg-white rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
-        {/* Image Container */}
-        <div className="relative h-64 bg-muted overflow-hidden">
-          {/* Badge */}
-          {(badge || hasDiscount) && (
-            <div className="absolute top-3 left-3 z-10 flex gap-2">
-              {badge && (
-                <span className="inline-block px-2.5 py-1 bg-primary text-black text-xs font-bold rounded-md">
-                  {badge}
-                </span>
-              )}
-              {hasDiscount && (
-                <span className="inline-block px-2.5 py-1 bg-green-500 text-black text-xs font-bold rounded-md">
-                  Save {discountPercent}%
-                </span>
-              )}
+    function triggerVariantError() {
+        setVariantError(true)
+        setShake(true)
+        setTimeout(() => setShake(false), 400)
+    }
+
+    function handleVariantChange(e: React.ChangeEvent<HTMLSelectElement>) {
+        setSelectedVariant(e.target.value)
+        if (e.target.value) setVariantError(false)
+    }
+
+    function buildPayload() {
+        const matched = resolveStock()
+        // For no-variant products, fall back to first stock row
+        const stockRow = matched ?? product.stocks[0]
+        return {
+            id: product.id,
+            name: product.name,
+            price: matched?.price ?? parsePrice(product.main_price),
+            image: product.thumbnail_image ?? undefined,
+            variation: variantRequired ? selectedVariant : undefined,
+            variantId: stockRow?.id ?? null,   // ← ADD
+        }
+    }
+
+    function trackCartEvent(eventName: "AddToCart" | "InitiateCheckout") {
+        const payload = buildPayload()
+        fbqTrack(eventName, {
+            content_ids: [String(product.id)],
+            content_type: "product",
+            content_name: product.name,
+            contents: [{ id: String(product.id), quantity: 1 }],
+            value: payload.price,
+            currency: "BDT",
+        })
+    }
+
+    function handleAddToCart() {
+        if (variantRequired && !selectedVariant) {
+            triggerVariantError()
+            return
+        }
+        trackCartEvent("AddToCart")
+        addItemAndOpen(buildPayload())   // ← opens cart drawer
+    }
+
+    function handleOrderNow() {
+        if (variantRequired && !selectedVariant) {
+            triggerVariantError()
+            return
+        }
+        trackCartEvent("AddToCart")
+        addItem(buildPayload())          // ← no cart open
+        trackCartEvent("InitiateCheckout")
+        router.push("/checkout")
+    }
+
+    return (
+        <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg">
+
+            {/* ── Image ── */}
+            <div className="relative bg-secondary/40 p-3">
+                {product.has_discount && (
+                    <span className="absolute left-3 top-3 z-10 rounded-md bg-[#f5c518] px-2 py-1 text-[11px] font-bold text-foreground leading-none">
+                        {product.discount_type === "percent"
+                            ? `SAVE ${product.discount}%`
+                            : `SAVE ৳${product.discount}`}
+                    </span>
+                )}
+                {outOfStock && (
+                    <span className="absolute right-3 top-3 z-10 rounded-md bg-red-100 px-2 py-1 text-[11px] font-bold text-red-600 leading-none">
+                        স্টক নেই
+                    </span>
+                )}
+                <a href={`/product/${product.slug}`} className="block">
+                    <div className="relative mx-auto h-40 w-full">
+                        <Image
+                            src={product.thumbnail_image || "/placeholder.svg"}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 200px"
+                            className="object-contain transition-transform duration-200 hover:scale-105"
+                        />
+                    </div>
+                </a>
             </div>
-          )}
 
-          {/* Image */}
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-300"
-            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
-        </div>
+            {/* ── Body ── */}
+            <div className="flex flex-1 flex-col p-3">
+                <a href={`/product/${product.slug}`}>
+                    <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-foreground hover:text-[#EE2430] transition-colors">
+                        {product.name}
+                    </h3>
+                </a>
 
-        {/* Content */}
-        <div className="p-4 h-[164px] flex flex-col justify-end">
-          {/* Product Name */}
-          <p className="text-sm text-black line-clamp-2  transition-colors">
-            {name}
-          </p>
+                <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-lg font-extrabold text-foreground">{product.main_price}</span>
+                    {product.has_discount && (
+                        <span className="text-sm text-muted-foreground line-through">{product.stroked_price}</span>
+                    )}
+                </div>
 
-          {/* Rating */}
-          {reviews > 0 && (
-            <div className="flex items-center gap-1.5 my-2">
-              <div className="flex gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3.5 h-3.5 ${
-                      i < Math.round(rating)
-                        ? "fill-primary text-primary"
-                        : "text-border"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs text-black">({reviews})</span>
+                {options.length > 0 && (
+                    <div className={`mt-3 ${shake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}>
+                        <select
+                            value={selectedVariant}
+                            onChange={handleVariantChange}
+                            className={`h-9 w-full rounded-md border bg-card px-2 text-sm outline-none transition-colors ${
+                                variantError
+                                    ? "border-[#EE2430] text-[#EE2430]"
+                                    : "border-border text-muted-foreground focus:border-[#EE2430]"
+                            }`}
+                        >
+                            <option value="" disabled>{label}</option>
+                            {options.map((v) => (
+                                <option key={v} value={v}>{v}</option>
+                            ))}
+                        </select>
+                        {variantError && (
+                            <p className="mt-1 text-[11px] font-semibold text-[#EE2430]">
+                                অনুগ্রহ করে একটি {label.toLowerCase()} নির্বাচন করুন
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                <div className="mt-3 flex flex-1 flex-col justify-end gap-2">
+                    <button
+                        onClick={handleOrderNow}
+                        disabled={outOfStock}
+                        className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md bg-foreground text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-40"
+                    >
+                        <Lock className="h-4 w-4" /> অর্ডার করুন
+                    </button>
+                    {showAddToCart && (
+                        <button
+                            onClick={handleAddToCart}
+                            disabled={outOfStock}
+                            className="flex h-10 items-center cursor-pointer justify-center gap-2 rounded-md border border-foreground text-sm font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                            <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
+                        </button>
+                    )}
+                </div>
             </div>
-          )}
-
-          {/* Price */}
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-lg text-black font-bold ">
-              ৳{price.toLocaleString()}
-            </span>
-
-            {hasDiscount && (
-              <span className="text-xs text-black line-through">
-                ৳{originalPrice.toLocaleString()}
-              </span>
-            )}
-          </div>
-
-          {/* Button */}
-          <button
-            onClick={handleAddToCart}
-            disabled={isAdding}
-            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 bg-[#013E77] border-primary text-primary rounded-lg  hover:text-white disabled:opacity-50 transition-all duration-200 font-semibold text-sm"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            {isAdding ? "Adding..." : "Add To Cart"}
-          </button>
-        </div>
-      </div>
-    </Link>
-  );
+        </article>
+    )
 }

@@ -1,0 +1,48 @@
+{
+  "brand": {
+    "name": "Moto Empire",
+    "subtitle": "Moto Empire.",
+    "phone": "01732206841",
+    "email": "bdmotoempire@gmail.com",
+    "address": "274/3, Khandaker Plaza, 60 Feet Main Road, Mirpur, Dhaka-1216"
+  },
+
+
+  "features": [
+    { "icon": "truck", "title": "দ্রুত ডেলিভারি", "subtitle": "সারা দেশে" },
+    { "icon": "shield", "title": "নিরাপদ পেমেন্ট", "subtitle": "১০০% নিরাপদ চেকআউট" },
+    { "icon": "award", "title": "উচ্চ গুণমান", "subtitle": "শুধুমাত্র সেরা পণ্য" },
+    { "icon": "headphones", "title": "২৪/৭ সাপোর্ট", "subtitle": "কাস্টমার সার্ভিস সর্বদা প্রস্তুত" }
+  ],
+  "footer": {
+    "linksTitle": "প্রয়োজনীয় লিংক",
+    "links": [
+      { "label": "আমাদের সাথে যোগাযোগ করুন", "url": "/page/contact" },
+      { "label": "Order Procedure", "url": "/page/order-procedure" },
+      { "label": "Delivery Rules", "url": "/page/delivery-rules" },
+      { "label": "Return Policy", "url": "/page/return-policy" }
+
+    ],
+    "infoTitle": "INFORMATION",
+    "info": [
+      { "label": "সব পণ্য", "url": "/shop" },
+      { "label": "Delivery Rules", "url": "/page/delivery-rules" },
+      { "label": "Warranty", "url": "/page/warranty" },
+      { "label": "Terms & Conditions", "url": "/page/terms-conditions" },
+      { "label": "Privacy Policy", "url": "/page/privacy-policy" }
+    ],
+    "newsletterTitle": "NEWSLETTER",
+    "newsletterText": "Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.",
+    "socialTitle": "FOLLOW US ON",
+    "socials": [
+      { "platform": "facebook",  "url": "https://www.facebook.com/bdmotoempire" },
+      { "platform": "youtube",   "url": "https://www.youtube.com/@bdmotoempire" },
+      { "platform": "instagram", "url": "https://instagram.com/yourhandle" },
+      { "platform": "tiktok",    "url": "https://www.tiktok.com/@motoempirebd" }
+    ],
+    "supportLabel": "কাস্টমার সাপোর্ট",
+
+    "copyright": "Copyright © 2026 Moto Empire BD. All Rights Reserved.",
+    "developer": "Nelsistech"
+  }
+}

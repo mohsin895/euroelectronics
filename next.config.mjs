@@ -1,11 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
-  },
+    images: {
+        unoptimized: true,
+    },
+    async rewrites() {
+        return [
+            {
+                source: "/uploads/:path*",
+                destination: "http://localhost/moto-empire/public/uploads/:path*",
+            },
+        ]
+    },
 }
 
 export default nextConfig

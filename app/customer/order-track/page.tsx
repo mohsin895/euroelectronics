@@ -1,18 +1,30 @@
 import { Suspense } from "react"
-
+import siteData from "@/data/site.json"
+import type { SiteData } from "@/lib/types"
+import type { ApiCategory } from "@/app/page"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 import { FloatingButtons } from "@/components/floating-buttons"
 import { OrderTrackPanel } from "@/components/order-track-panel"
-import {Footer} from "@/components/footer";
-import {Header} from "@/components/header";
 
+const data = siteData as SiteData
+const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN ?? ""
 
+async function getCategories(): Promise<ApiCategory[]> {
+    try {
+        const res = await fetch(`${DOMAIN}/categories`, { next: { revalidate: 60 } })
+        if (!res.ok) return []
+        const json = await res.json()
+        return json.success && Array.isArray(json.data) ? json.data : []
+    } catch { return [] }
+}
 
 export default async function OrderTrack() {
-
+    const [categories] = await Promise.all([getCategories()])
 
     return (
         <div className="min-h-screen bg-background">
-            <Header />
+            <SiteHeader brand={data.brand} categories={categories} />
 
             <main className="mx-auto max-w-2xl px-4 py-10">
                 <p className="mb-6 text-center text-sm text-muted-foreground">
@@ -42,7 +54,7 @@ export default async function OrderTrack() {
                 </div>
             </main>
 
-            <Footer />
+            <SiteFooter brand={data.brand} footer={data.footer} />
             <FloatingButtons />
         </div>
     )

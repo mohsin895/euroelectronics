@@ -107,9 +107,9 @@ export function AuthShell({ eyebrow, title, description, gaugeLabel, gaugeValue,
                 />
 
                 <Link href="/" className="relative z-10 flex items-baseline gap-2">
-                    <span className={`${rajdhani.className} text-2xl font-bold tracking-tight`}>Eggs </span>
+                    <span className={`${rajdhani.className} text-2xl font-bold tracking-tight`}>Moto </span>
                     <span className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#8893A3]">
-                     & Spices
+                      Empirebd
                     </span>
                 </Link>
 

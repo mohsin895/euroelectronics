@@ -1,278 +1,234 @@
-'use client'
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
-import { useCart } from '@/lib/cart-context'
-import Link from 'next/link'
-import Image from 'next/image'
-import { use, useEffect, useState } from 'react'
-import { ShoppingCart, Heart, Share2, ShieldCheck, Clock } from 'lucide-react'
-import { fetchProductDetails, type UiProductDetail } from '@/lib/products'
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
-export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-    const { slug } = use(params)
-    const { addItem } = useCart()
-    const [product, setProduct] = useState<UiProductDetail | null>(null)
-    const [activeImage, setActiveImage] = useState<string | null>(null)
-    const [quantity, setQuantity] = useState(1)
-    const [isLoading, setIsLoading] = useState(true)
-    const [notFound, setNotFound] = useState(false)
-    const [addedToCart, setAddedToCart] = useState(false)
+import { ProductDetails } from "@/components/product-details";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { FeaturesBar } from "@/components/features-bar";
+import { FloatingButtons } from "@/components/floating-buttons";
 
-    useEffect(() => {
-        setIsLoading(true)
-        setNotFound(false)
+import type { ProductDetail, RelatedProduct } from "@/lib/product.types";
+import type { ApiCategory } from "@/app/page";
+import siteData from "@/data/site.json";
+import type { SiteData } from "@/lib/types";
 
-        fetchProductDetails(slug)
-            .then((data) => {
-                setProduct(data)
-                setActiveImage(data.mainImage)
-            })
-            .catch((err) => {
-                console.error('[ProductDetailPage] Failed to fetch product:', err)
-                if (err instanceof Error && err.message === 'NOT_FOUND') {
-                    setNotFound(true)
-                }
-            })
-            .finally(() => setIsLoading(false))
-    }, [slug])
+const data = siteData as SiteData;
 
-    const handleAddToCart = () => {
-        if (!product) return
-        addItem({
-            id: product.id,
-            name: product.name,
-            price: product.discount.finalPrice,
-            quantity,
-            image: product.mainImage,
-            stock: 99, // TODO: swap in real stock once the API exposes it
-        })
-        setAddedToCart(true)
-        setTimeout(() => setAddedToCart(false), 2000)
+const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN ?? "";
+const PATH = process.env.NEXT_PUBLIC_PATH ?? "";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+
+// ===================== Fetch Product =====================
+async function getProduct(
+    slug: string
+): Promise<{
+    product: ProductDetail;
+    related_products: RelatedProduct[];
+} | null> {
+    try {
+        const res = await fetch(`${DOMAIN}/products/details/${slug}`, {
+            next: { revalidate: 60 },
+        });
+
+        if (!res.ok) return null;
+
+        const json = await res.json();
+
+        return json.success
+            ? {
+                product: json.product,
+                related_products: json.related_products ?? [],
+            }
+            : null;
+    } catch {
+        return null;
+    }
+}
+
+// ===================== Fetch Categories =====================
+async function getCategories(): Promise<ApiCategory[]> {
+    try {
+        const res = await fetch(`${DOMAIN}/categories`, {
+            next: { revalidate: 60 },
+        });
+
+        if (!res.ok) return [];
+
+        const json = await res.json();
+
+        return json.success && Array.isArray(json.data)
+            ? json.data
+            : [];
+    } catch {
+        return [];
+    }
+}
+
+// ===================== SEO Metadata =====================
+export async function generateMetadata({
+                                           params,
+                                       }: {
+    params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+    const { slug } = await params;
+
+    const result = await getProduct(slug);
+
+    if (!result) {
+        return {
+            title: "Product Not Found",
+            description: "Requested product was not found.",
+        };
     }
 
-    if (isLoading) {
-        return (
-            <>
-                <Header />
-                <main className="min-h-screen flex items-center justify-center">
-                    <p className="text-muted-foreground">Loading product...</p>
-                </main>
-                <Footer />
-            </>
-        )
+    const { product } = result;
+
+    const title =
+        (product as any).meta_title ||
+        `${product.name} | ${data.brand.name}`;
+
+    const description =
+        (product as any).meta_description ||
+        product.description?.replace(/<[^>]*>/g, "").substring(0, 160) ||
+        product.name;
+
+    const keywords = (product as any).meta_keywords
+        ? (product as any).meta_keywords.split(",")
+        : [product.name];
+
+    const image = product.thumbnail?.file_name
+        ? `${PATH}/${product.thumbnail.file_name}`
+        : `${SITE_URL}/placeholder.png`;
+
+    const url = `${SITE_URL}/products/${slug}`;
+
+    return {
+        title,
+        description,
+        keywords,
+
+        robots: {
+            index: true,
+            follow: true,
+        },
+
+        alternates: {
+            canonical: url,
+        },
+
+        openGraph: {
+            title,
+            description,
+            url,
+            siteName: data.brand.name,
+            type: "website",
+
+            images: [
+                {
+                    url: image,
+                    width: 1200,
+                    height: 630,
+                    alt: product.name,
+                },
+            ],
+        },
+
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+            images: [image],
+        },
+    };
+}
+
+// ===================== Page =====================
+export default async function ProductPage({
+                                              params,
+                                          }: {
+    params: Promise<{ slug: string }>;
+}) {
+    const { slug } = await params;
+
+    const [result, categories] = await Promise.all([
+        getProduct(slug),
+        getCategories(),
+    ]);
+
+    if (!result) {
+        notFound();
     }
 
-    if (notFound || !product) {
-        return (
-            <>
-                <Header />
-                <main className="min-h-screen flex items-center justify-center">
-                    <p className="text-muted-foreground">Product not found</p>
-                </main>
-                <Footer />
-            </>
-        )
-    }
+    const { product, related_products } = result;
 
-    const gallery = [product.mainImage, ...product.images.filter((img) => img !== product.mainImage)]
-    const { discount } = product
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+
+        name: product.name,
+
+        image: product.thumbnail?.file_name
+            ? [`${PATH}/${product.thumbnail.file_name}`]
+            : [],
+
+        description:
+            product.description?.replace(/<[^>]*>/g, "") ?? "",
+
+        sku: String(product.id),
+
+        brand: {
+            "@type": "Brand",
+            name: data.brand.name,
+        },
+
+        offers: {
+            "@type": "Offer",
+
+            priceCurrency: "BDT",
+
+            price: product.unit_price,
+
+            availability:
+                product.current_stock > 0
+                    ? "https://schema.org/InStock"
+                    : "https://schema.org/OutOfStock",
+
+            url: `${SITE_URL}/products/${slug}`,
+        },
+    };
 
     return (
-        <>
-            <Header />
-            <main className="min-h-screen">
-                {/* Breadcrumb */}
-                <div className="px-4 md:px-6 py-4 bg-white border-b border-border">
-                    <div className="max-w-7xl mx-auto">
-                        <Link href="/" className="text-muted-foreground hover:text-primary">
-                            Home
-                        </Link>
-                        <span className="text-muted-foreground"> / </span>
-                        <Link href="/shop" className="text-muted-foreground hover:text-primary">
-                            Products
-                        </Link>
-                        <span className="text-muted-foreground"> / {product.name}</span>
-                    </div>
-                </div>
+        <div className="min-h-screen bg-background">
 
-                <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-                    <div className="grid md:grid-cols-2 gap-8 mb-12">
-                        {/* Gallery */}
-                        <div className="flex flex-col p-5 gap-4">
-                            <div className="relative w-full h-96 bg-muted rounded-lg overflow-hidden">
-                                <Image
-                                    src={activeImage || product.mainImage}
-                                    alt={product.name}
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
+            {/* JSON-LD */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(schema),
+                }}
+            />
 
-                            {gallery.length > 1 && (
-                                <div className="flex gap-3  p-5">
-                                    {gallery.map((img, i) => (
-                                        <button
-                                            key={i}
-                                            onClick={() => setActiveImage(img)}
-                                            className={`relative w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${
-                                                activeImage === img ? 'border-primary' : 'border-transparent'
-                                            }`}
-                                        >
-                                            <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" />
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+            <SiteHeader
+                brand={data.brand}
+                categories={categories}
+            />
 
-                        {/* Info */}
-                        <div>
-                            <div className="mb-4">
-                                <span className="text-sm text-muted-foreground">{product.category}</span>
-                                <h1 className="text-3xl font-bold text-foreground mt-2">{product.name}</h1>
-                                {product.brand && (
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        Brand: <span className="font-medium text-foreground">{product.brand}</span>
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Price */}
-                            <div className="mb-6 pb-6 border-b border-border">
-                                <div className="flex items-center gap-4 mb-2">
-                  <span className="text-4xl font-bold text-primary">
-                    ৳{discount.finalPrice.toLocaleString()}
-                  </span>
-                                    {discount.isActive && (
-                                        <span className="text-xl text-muted-foreground line-through">
-                      ৳{discount.originalPrice.toLocaleString()}
-                    </span>
-                                    )}
-                                    {discount.isActive && discount.savedPercent > 0 && (
-                                        <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-semibold">
-                      Save {discount.savedPercent}%
-                    </span>
-                                    )}
-                                </div>
-
-                                {discount.isActive && discount.daysRemaining !== null && (
-                                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-2">
-                                        <Clock className="w-4 h-4" />
-                                        {discount.daysRemaining > 0
-                                            ? `Offer ends in ${discount.daysRemaining} day${discount.daysRemaining === 1 ? '' : 's'}`
-                                            : 'Offer ends today'}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Meta */}
-                            <div className="mb-6 pb-6 border-b border-border space-y-2 text-sm">
-                                {/*{product.code && (*/}
-                                {/*    <p className="text-muted-foreground">*/}
-                                {/*        <span className="font-semibold text-foreground">Code:</span> {product.code}*/}
-                                {/*    </p>*/}
-                                {/*)}*/}
-                                {/*{product.barcode && (*/}
-                                {/*    <p className="text-muted-foreground">*/}
-                                {/*        <span className="font-semibold text-foreground">Barcode:</span> {product.barcode}*/}
-                                {/*    </p>*/}
-                                {/*)}*/}
-                                {product.unit && (
-                                    <p className="text-muted-foreground">
-                                        <span className="font-semibold text-foreground">Unit:</span> {product.unit}
-                                    </p>
-                                )}
-                                {(product.warrenty || product.guarantee) && (
-                                    <p className="flex items-center gap-1.5 text-muted-foreground">
-                                        <ShieldCheck className="w-4 h-4" />
-                                        {product.warrenty ? `Warranty: ${product.warrenty}` : `Guarantee: ${product.guarantee}`}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Quantity */}
-                            <div className="mb-6 flex items-center gap-4">
-                                <span className="text-sm font-medium">Quantity:</span>
-                                <div className="flex items-center border border-border rounded-lg">
-                                    <button
-                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="px-4 py-2 hover:bg-muted transition-colors"
-                                    >
-                                        −
-                                    </button>
-                                    <input
-                                        type="number"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                        className="w-16 text-center border-l border-r border-border"
-                                    />
-                                    <button
-                                        onClick={() => setQuantity(quantity + 1)}
-                                        className="px-4 py-2 hover:bg-muted transition-colors"
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="space-y-3">
-                                <button
-                                    onClick={handleAddToCart}
-                                    className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors ${
-                                        addedToCart ? 'bg-green-600 text-white' : 'bg-primary text-white hover:bg-primary/90'
-                                    }`}
-                                >
-                                    <ShoppingCart className="w-5 h-5" />
-                                    {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-                                </button>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-medium">
-                                        <Heart className="w-5 h-5" />
-                                        Wishlist
-                                    </button>
-                                    <button className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-medium">
-                                        <Share2 className="w-5 h-5" />
-                                        Share
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Description */}
-                    {/* Description */}
-                    {product.description && (
-                        <div className="mb-6 pb-6 border-b border-border bg-white p-5">
-                            <h3 className="text-sm font-semibold text-foreground mb-2">Description</h3>
-                            <div
-                                className="prose prose-sm max-w-none text-muted-foreground"
-                                dangerouslySetInnerHTML={{ __html: product.description }}
-                            />
-                        </div>
-                    )}
-                    {/* Related Products */}
-                    {product.relatedProducts.length > 0 && (
-                        <div>
-                            <h2 className="text-2xl font-bold mb-6 text-foreground">You May Also Like</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {product.relatedProducts.map((rel) => (
-                                    <Link
-                                        key={rel.id}
-                                        href={`/product/${rel.slug}`}
-                                        className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
-                                    >
-                                        <p className="font-medium text-foreground line-clamp-2">{rel.name}</p>
-                                        <p className="text-primary font-bold mt-2">৳{rel.sale_price.toLocaleString()}</p>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
+            <main className="mx-auto max-w-7xl px-4 py-8">
+                <ProductDetails
+                    product={product}
+                    relatedProducts={related_products}
+                    path={PATH}
+                />
             </main>
-            <Footer />
-        </>
-    )
+
+            <FeaturesBar features={data.features} />
+
+            <SiteFooter
+                brand={data.brand}
+                footer={data.footer}
+            />
+
+            <FloatingButtons />
+        </div>
+    );
 }

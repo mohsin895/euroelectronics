@@ -7,10 +7,10 @@ import { CartDrawer } from "@/components/cart-drawer"
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <AuthProvider>
-
+            <CartProvider>
                 {children}
-
-
+                <CartDrawer />
+            </CartProvider>
         </AuthProvider>
     )
 }
