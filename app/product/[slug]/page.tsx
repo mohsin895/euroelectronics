@@ -1,234 +1,221 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { ProductDetails } from "@/components/product-details";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { FeaturesBar } from "@/components/features-bar";
 import { FloatingButtons } from "@/components/floating-buttons";
+import { ProductDetails } from "@/components/product-details";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
-import type { ProductDetail, RelatedProduct } from "@/lib/product.types";
 import type { ApiCategory } from "@/app/page";
 import siteData from "@/data/site.json";
+import type { ProductDetail, RelatedProduct } from "@/lib/product.types";
 import type { SiteData } from "@/lib/types";
 
 const data = siteData as SiteData;
 
 const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN ?? "";
 const PATH = process.env.NEXT_PUBLIC_PATH ?? "";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN ?? "";
 
 // ===================== Fetch Product =====================
-async function getProduct(
-    slug: string
-): Promise<{
-    product: ProductDetail;
-    related_products: RelatedProduct[];
+async function getProduct(slug: string): Promise<{
+  product: ProductDetail;
+  related_products: RelatedProduct[];
 } | null> {
-    try {
-        const res = await fetch(`${DOMAIN}/products/details/${slug}`, {
-            next: { revalidate: 60 },
-        });
+  try {
+    const res = await fetch(`${DOMAIN}/products/details/${slug}`, {
+      next: { revalidate: 60 },
+    });
 
-        if (!res.ok) return null;
+    if (!res.ok) return null;
 
-        const json = await res.json();
+    const json = await res.json();
 
-        return json.success
-            ? {
-                product: json.product,
-                related_products: json.related_products ?? [],
-            }
-            : null;
-    } catch {
-        return null;
-    }
+    return json.success
+      ? {
+          product: json.product,
+          related_products: json.related_products ?? [],
+        }
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 // ===================== Fetch Categories =====================
 async function getCategories(): Promise<ApiCategory[]> {
-    try {
-        const res = await fetch(`${DOMAIN}/categories`, {
-            next: { revalidate: 60 },
-        });
+  try {
+    const res = await fetch(`${DOMAIN}/categories`, {
+      next: { revalidate: 60 },
+    });
 
-        if (!res.ok) return [];
+    if (!res.ok) return [];
 
-        const json = await res.json();
+    const json = await res.json();
 
-        return json.success && Array.isArray(json.data)
-            ? json.data
-            : [];
-    } catch {
-        return [];
-    }
+    return json.success && Array.isArray(json.data) ? json.data : [];
+  } catch {
+    return [];
+  }
 }
 
 // ===================== SEO Metadata =====================
 export async function generateMetadata({
-                                           params,
-                                       }: {
-    params: Promise<{ slug: string }>;
+  params,
+}: {
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-    const { slug } = await params;
+  const { slug } = await params;
 
-    const result = await getProduct(slug);
+  const result = await getProduct(slug);
 
-    if (!result) {
-        return {
-            title: "Product Not Found",
-            description: "Requested product was not found.",
-        };
-    }
-
-    const { product } = result;
-
-    const title =
-        (product as any).meta_title ||
-        `${product.name} | ${data.brand.name}`;
-
-    const description =
-        (product as any).meta_description ||
-        product.description?.replace(/<[^>]*>/g, "").substring(0, 160) ||
-        product.name;
-
-    const keywords = (product as any).meta_keywords
-        ? (product as any).meta_keywords.split(",")
-        : [product.name];
-
-    const image = product.thumbnail?.file_name
-        ? `${PATH}/${product.thumbnail.file_name}`
-        : `${SITE_URL}/placeholder.png`;
-
-    const url = `${SITE_URL}/products/${slug}`;
-
+  if (!result) {
     return {
-        title,
-        description,
-        keywords,
-
-        robots: {
-            index: true,
-            follow: true,
-        },
-
-        alternates: {
-            canonical: url,
-        },
-
-        openGraph: {
-            title,
-            description,
-            url,
-            siteName: data.brand.name,
-            type: "website",
-
-            images: [
-                {
-                    url: image,
-                    width: 1200,
-                    height: 630,
-                    alt: product.name,
-                },
-            ],
-        },
-
-        twitter: {
-            card: "summary_large_image",
-            title,
-            description,
-            images: [image],
-        },
+      title: "Product Not Found",
+      description: "Requested product was not found.",
     };
+  }
+
+  const { product } = result;
+
+  const title =
+    (product as any).meta_title || `${product.name} | ${data.brand.name}`;
+
+  const description =
+    (product as any).meta_description ||
+    product.description?.replace(/<[^>]*>/g, "").substring(0, 160) ||
+    product.name;
+
+  const keywords = (product as any).meta_keywords
+    ? (product as any).meta_keywords.split(",")
+    : [product.name];
+
+  const image = product.thumbnail?.file_name
+    ? `${PATH}/${product.thumbnail.file_name}`
+    : `${SITE_URL}/placeholder.png`;
+
+  const url = `${SITE_URL}/products/${slug}`;
+
+  return {
+    title,
+    description,
+    keywords,
+
+    robots: {
+      index: true,
+      follow: true,
+    },
+
+    alternates: {
+      canonical: url,
+    },
+
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: data.brand.name,
+      type: "website",
+
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: product.name,
+        },
+      ],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
 }
 
 // ===================== Page =====================
 export default async function ProductPage({
-                                              params,
-                                          }: {
-    params: Promise<{ slug: string }>;
+  params,
+}: {
+  params: Promise<{ slug: string }>;
 }) {
-    const { slug } = await params;
+  const { slug } = await params;
 
-    const [result, categories] = await Promise.all([
-        getProduct(slug),
-        getCategories(),
-    ]);
+  const [result, categories] = await Promise.all([
+    getProduct(slug),
+    getCategories(),
+  ]);
 
-    if (!result) {
-        notFound();
-    }
+  if (!result) {
+    notFound();
+  }
 
-    const { product, related_products } = result;
+  const { product, related_products } = result;
 
-    const schema = {
-        "@context": "https://schema.org",
-        "@type": "Product",
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
 
-        name: product.name,
+    name: product.name,
 
-        image: product.thumbnail?.file_name
-            ? [`${PATH}/${product.thumbnail.file_name}`]
-            : [],
+    image: product.thumbnail?.file_name
+      ? [`${PATH}/${product.thumbnail.file_name}`]
+      : [],
 
-        description:
-            product.description?.replace(/<[^>]*>/g, "") ?? "",
+    description: product.description?.replace(/<[^>]*>/g, "") ?? "",
 
-        sku: String(product.id),
+    sku: String(product.id),
 
-        brand: {
-            "@type": "Brand",
-            name: data.brand.name,
-        },
+    brand: {
+      "@type": "Brand",
+      name: data.brand.name,
+    },
 
-        offers: {
-            "@type": "Offer",
+    offers: {
+      "@type": "Offer",
 
-            priceCurrency: "BDT",
+      priceCurrency: "BDT",
 
-            price: product.unit_price,
+      price: product.unit_price,
 
-            availability:
-                product.current_stock > 0
-                    ? "https://schema.org/InStock"
-                    : "https://schema.org/OutOfStock",
+      availability:
+        product.current_stock > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
 
-            url: `${SITE_URL}/products/${slug}`,
-        },
-    };
+      url: `${SITE_URL}/products/${slug}`,
+    },
+  };
 
-    return (
-        <div className="min-h-screen bg-background">
+  return (
+    <div className="min-h-screen bg-background">
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schema),
+        }}
+      />
 
-            {/* JSON-LD */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify(schema),
-                }}
-            />
+      <SiteHeader brand={data.brand} categories={categories} />
 
-            <SiteHeader
-                brand={data.brand}
-                categories={categories}
-            />
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        <ProductDetails
+          product={product}
+          relatedProducts={related_products}
+          path={PATH}
+        />
+      </main>
 
-            <main className="mx-auto max-w-7xl px-4 py-8">
-                <ProductDetails
-                    product={product}
-                    relatedProducts={related_products}
-                    path={PATH}
-                />
-            </main>
+      <FeaturesBar features={data.features} />
 
-            <FeaturesBar features={data.features} />
+      <SiteFooter brand={data.brand} footer={data.footer} />
 
-            <SiteFooter
-                brand={data.brand}
-                footer={data.footer}
-            />
-
-            <FloatingButtons />
-        </div>
-    );
+      <FloatingButtons />
+    </div>
+  );
 }
