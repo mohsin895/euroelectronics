@@ -36,11 +36,11 @@ export function HeroSection({ sliders, banner }: HeroSectionProps) {
     }, [next, sliders.length])
 
     return (
-        <section className="mx-auto max-w-7xl px-4 py-5">
-            <div className="grid gap-4 lg:grid-cols-3">
+        <section className="mx-auto ">
+
 
                 {/* ── Slider ── */}
-                <div className="relative overflow-hidden rounded-2xl lg:col-span-2 bg-muted min-h-[260px] md:min-h-[340px]">
+                <div className="relative overflow-hidden  bg-muted min-h-[260px] md:min-h-[340px]">
                     {sliders.length > 0 && (
                         <>
                             <div
@@ -103,25 +103,8 @@ export function HeroSection({ sliders, banner }: HeroSectionProps) {
                     )}
                 </div>
 
-                {/* ── Side banner ── */}
-                <div className="relative hidden overflow-hidden rounded-2xl bg-muted lg:block min-h-[340px]">
-                    {banner ? (
-                        <a href={banner.url} className="block w-full h-full">
-                            <Image
-                                src={banner.photo}
-                                alt="Banner"
-                                fill
-                                className="object-cover"
-                            />
-                        </a>
-                    ) : (
-                        <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
-                            No banner
-                        </div>
-                    )}
-                </div>
 
-            </div>
+
         </section>
     )
 }

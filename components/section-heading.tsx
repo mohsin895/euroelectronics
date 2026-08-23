@@ -8,9 +8,9 @@ export function SectionHeading({
     showMore?: boolean
 }) {
     return (
-        <div className="mb-6 flex items-center justify-between border-b border-border pb-3">
-            <h2 className="flex items-center gap-3 text-lg font-extrabold tracking-wide text-foreground md:text-xl">
-                <span className="h-6 w-1.5 rounded-full bg-accent" />
+        <div className="mb-6 flex items-center justify-center border-b border-border pb-3">
+            <h2 className="dynamic-section-title font-encode-sans text-lg lg:text-3xl text-coarse-wool font-semibold container mx-auto text-center normal-case">
+
                 {title}
             </h2>
             {showMore && (
