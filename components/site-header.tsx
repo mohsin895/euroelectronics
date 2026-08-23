@@ -3,7 +3,37 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import Image from "next/image"
 
-import { PackageSearch, ChevronDown, ChevronRight, Menu, X, Zap } from "lucide-react"
+import {
+    PackageSearch,
+    ChevronDown,
+    Menu,
+    X,
+    Package,
+    Refrigerator,
+    Snowflake,
+    Tv,
+    Wind,
+    AirVent,
+    Fan,
+    ChefHat,
+    CookingPot,
+    Coffee,
+    Droplet,
+    Flame,
+    Scissors,
+    Zap,
+    BatteryCharging,
+    Smartphone,
+    Headphones,
+    Watch,
+    Camera,
+    Laptop,
+    Speaker,
+    Cable,
+    Usb,
+    MessageSquare,
+    MapPin,
+} from "lucide-react"
 import type { Brand } from "@/lib/types"
 import type { ApiCategory } from "@/app/page"
 import logo from "../public/logo.png"
@@ -35,70 +65,81 @@ function mapCategories(data: ApiCategory[]): NavItem[] {
         }))
 }
 
-// ─── SubMenu (3rd level) ───────────────────────────────────────────────────────
-function SubMenu({ items }: { items: NavLeaf[] }) {
-    return (
-        <ul
-            className="absolute left-full top-0 z-[60] min-w-[200px] bg-white border border-gray-100 shadow-[0_8px_32px_rgba(0,0,0,0.14)] py-1.5 rounded-sm animate-dropdown"
-            role="menu"
-        >
-            {items.map((sub) => (
-                <li key={sub.label}>
-                    <a
-                        href={sub.href}
-                        role="menuitem"
-                        className="block px-4 py-2.5 text-[13px] text-gray-700 hover:bg-[#EE2430] hover:text-white transition-colors duration-150"
-                    >
-                        {sub.label}
-                    </a>
-                </li>
-            ))}
-        </ul>
-    )
+// ─── Icon lookup for category columns ──────────────────────────────────────────
+// Categories come from the API as plain names, so we match on keywords to pick
+// a representative icon. Falls back to a generic package icon when nothing matches.
+const CATEGORY_ICON_RULES: [RegExp, typeof Package][] = [
+    [/refrigerator|fridge/i, Refrigerator],
+    [/freezer/i, Snowflake],
+    [/air\s?condition|^ac\b/i, AirVent],
+    [/television|\btv\b/i, Tv],
+    [/washing/i, Wind],
+    [/fan/i, Fan],
+    [/oven|grill|convection/i, ChefHat],
+    [/cook|kitchen|rice cooker|cookware/i, CookingPot],
+    [/coffee/i, Coffee],
+    [/water (heater|purifier)|geyser/i, Droplet],
+    [/heater/i, Flame],
+    [/sewing/i, Scissors],
+    [/smart gadget|gadget/i, Zap],
+    [/power|voltage|ips\b/i, BatteryCharging],
+    [/phone|mobile/i, Smartphone],
+    [/headphone|earphone|speaker|audio/i, Headphones],
+    [/watch/i, Watch],
+    [/camera/i, Camera],
+    [/computer|laptop|accessories/i, Laptop],
+    [/cable/i, Cable],
+    [/usb|charger|hub/i, Usb],
+    [/speaker/i, Speaker],
+]
+
+function getCategoryIcon(label: string) {
+    const match = CATEGORY_ICON_RULES.find(([pattern]) => pattern.test(label))
+    return match ? match[1] : Package
 }
 
-// ─── DropdownMenu (2nd level) ──────────────────────────────────────────────────
-function DropdownMenu({ items }: { items: NavChild[] }) {
-    const [activeLabel, setActiveLabel] = useState<string | null>(null)
-    const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-    const clearLeave = () => { if (leaveTimer.current) clearTimeout(leaveTimer.current) }
-    const scheduleClose = () => { leaveTimer.current = setTimeout(() => setActiveLabel(null), 150) }
-
-    useEffect(() => () => { if (leaveTimer.current) clearTimeout(leaveTimer.current) }, [])
-
+// ─── Mega menu (Categories dropdown) ───────────────────────────────────────────
+function CategoriesMegaMenu({ items }: { items: NavItem[] }) {
     return (
-        <ul
-            className="absolute left-0 top-0 z-50 min-w-[220px] bg-white border border-gray-100 shadow-[0_8px_32px_rgba(0,0,0,0.12)] py-1.5 rounded-sm animate-dropdown"
+        <div
+            className="absolute left-0 right-0 top-full z-[60] border-t border-gray-100 bg-white shadow-[0_16px_40px_rgba(0,0,0,0.16)] animate-dropdown"
             role="menu"
         >
-            {items.map((item) => {
-                const hasSub = !!item.children?.length
-                const isActive = activeLabel === item.label
-                return (
-                    <li
-                        key={item.label}
-                        className="relative"
-                        onMouseEnter={() => { clearLeave(); hasSub ? setActiveLabel(item.label) : setActiveLabel(null) }}
-                        onMouseLeave={() => { if (hasSub) scheduleClose() }}
-                    >
-                        <a
-                            href={item.href}
-                            role="menuitem"
-                            className="flex items-center justify-between px-4 py-2.5 text-[13px] text-gray-700 hover:bg-[#EE2430] hover:text-white transition-colors duration-150 group"
-                        >
-                            <span>{item.label}</span>
-                            {hasSub && <ChevronRight className="h-3.5 w-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />}
-                        </a>
-                        {hasSub && isActive && (
-                            <div onMouseEnter={clearLeave} onMouseLeave={scheduleClose}>
-                                <SubMenu items={item.children!} />
+            <div className="mx-auto max-w-7xl px-6 py-6">
+                <div className="grid max-h-[65vh] grid-cols-2 gap-x-8 gap-y-7 overflow-y-auto pr-2 sm:grid-cols-3 lg:grid-cols-5">
+                    {items.map((item) => {
+                        const Icon = getCategoryIcon(item.label)
+                        return (
+                            <div key={item.label} className="min-w-0">
+                                <a
+                                    href={item.href}
+                                    role="menuitem"
+                                    className="mb-2.5 flex items-center gap-2 text-[14px] font-bold text-gray-900 hover:text-[#EE2430] transition-colors"
+                                >
+                                    <Icon className="h-[18px] w-[18px] shrink-0 text-[#EE2430]" />
+                                    <span className="truncate">{item.label}</span>
+                                </a>
+                                {!!item.children?.length && (
+                                    <ul className="space-y-1.5">
+                                        {item.children.map((sub) => (
+                                            <li key={sub.label}>
+                                                <a
+                                                    href={sub.href}
+                                                    role="menuitem"
+                                                    className="block text-[13px] text-gray-600 hover:text-[#EE2430] transition-colors"
+                                                >
+                                                    {sub.label}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
-                        )}
-                    </li>
-                )
-            })}
-        </ul>
+                        )
+                    })}
+                </div>
+            </div>
+        </div>
     )
 }
 
@@ -114,7 +155,7 @@ function NavItemDesktop({ item }: { item: NavItem }) {
 
     return (
         <li
-            className="relative"
+            className="relative static"
             onMouseEnter={() => { clearLeave(); setOpen(true) }}
             onMouseLeave={scheduleClose}
         >
@@ -122,7 +163,7 @@ function NavItemDesktop({ item }: { item: NavItem }) {
                 href={item.href}
                 aria-haspopup={item.hasDropdown ? "true" : undefined}
                 aria-expanded={item.hasDropdown ? open : undefined}
-                className={`flex items-center gap-1 px-3 py-4 text-[13px] font-semibold tracking-wide transition-colors duration-150 whitespace-nowrap ${
+                className={`flex items-center gap-1 px-4 py-4 text-[14px] font-semibold tracking-wide transition-colors duration-150 whitespace-nowrap ${
                     open ? "bg-white/20 text-white" : "text-white/90 hover:text-white hover:bg-white/10"
                 }`}
             >
@@ -133,13 +174,8 @@ function NavItemDesktop({ item }: { item: NavItem }) {
             </a>
 
             {item.hasDropdown && !!item.children?.length && open && (
-                <div
-                    className="absolute left-0 top-full z-50"
-                    onMouseEnter={() => { clearLeave(); setOpen(true) }}
-                    onMouseLeave={scheduleClose}
-                >
-                    <div className="h-[2px]" />
-                    <DropdownMenu items={item.children} />
+                <div onMouseEnter={() => { clearLeave(); setOpen(true) }} onMouseLeave={scheduleClose}>
+                    <CategoriesMegaMenu items={item.children as unknown as NavItem[]} />
                 </div>
             )}
         </li>
@@ -169,12 +205,17 @@ function MobileNavItem({ item }: { item: NavItem }) {
             {item.hasDropdown && open && !!item.children?.length && (
                 <ul className="mb-1 rounded-sm bg-white/10">
                     {item.children.map((child) => {
+                        const Icon = getCategoryIcon(child.label)
                         const hasSub = !!child.children?.length
                         const subOpen = activeSub === child.label
                         return (
                             <li key={child.label}>
                                 <div className="flex w-full items-center justify-between border-b border-white/5 last:border-0">
-                                    <a href={child.href} className="flex-1 px-4 py-2.5 text-[13px] text-white/90 hover:text-white">
+                                    <a
+                                        href={child.href}
+                                        className="flex flex-1 items-center gap-2 px-4 py-2.5 text-[13px] font-semibold text-white/90 hover:text-white"
+                                    >
+                                        <Icon className="h-3.5 w-3.5 shrink-0 text-[#EE2430]" />
                                         {child.label}
                                     </a>
                                     {hasSub && (
@@ -193,7 +234,7 @@ function MobileNavItem({ item }: { item: NavItem }) {
                                             <li key={sub.label}>
                                                 <a
                                                     href={sub.href}
-                                                    className="block px-8 py-2 text-[12px] text-white/80 hover:text-white border-b border-white/5 last:border-0"
+                                                    className="block px-9 py-2 text-[12px] text-white/80 hover:text-white border-b border-white/5 last:border-0"
                                                 >
                                                     {sub.label}
                                                 </a>
@@ -219,79 +260,108 @@ export function SiteHeader({
     categories: ApiCategory[]
 }) {
     const [mobileOpen, setMobileOpen] = useState(false)
-    const nav = mapCategories(categories)
+
+    // All API categories are collapsed into a single "Categories" mega-menu
+    // trigger, matching the reference layout. "Brands" and "Campaigns" stay
+    // as simple static links alongside it.
+    const categoryColumns = mapCategories(categories)
+    const nav: NavItem[] = [
+        {
+            label: "Categories",
+            href: "/categories",
+            hasDropdown: categoryColumns.length > 0,
+            children: categoryColumns as unknown as NavChild[],
+        },
+        { label: "Brands", href: "/brands" },
+        { label: "Campaigns", href: "/campaigns" },
+    ]
 
     return (
         <>
             <style>{`
                 @keyframes dropdownIn {
-                    from { opacity: 0; transform: translateY(-5px); }
+                    from { opacity: 0; transform: translateY(-6px); }
                     to   { opacity: 1; transform: translateY(0); }
                 }
                 .animate-dropdown { animation: dropdownIn 0.15s ease-out forwards; }
             `}</style>
 
-            {/* ── Top bar: scrolls away with the page ── */}
-            <div className="w-full bg-card border-b border-border">
-                <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 md:gap-6">
+            {/* ── Utility strip: scrolls away with the page ── */}
+            <div className="w-full bg-[#4B5563]">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-[13px] text-white/85">
+                    <ul className="flex items-center gap-5">
+                        <li><a href="/about" className="hover:text-white transition-colors">About</a></li>
+                        <li><a href="/b2b" className="hover:text-white transition-colors">B2B</a></li>
+                        <li>
+                            <a href="/chat" className="flex items-center gap-1.5 hover:text-white transition-colors">
+                                <MessageSquare className="h-3.5 w-3.5" />
+                                Chat
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/locations" className="flex items-center gap-1.5 hover:text-white transition-colors">
+                                <MapPin className="h-3.5 w-3.5" />
+                                Locations
+                            </a>
+                        </li>
+                    </ul>
 
-                    <a href="/" className="flex shrink-0 items-center w-[20%]">
-                        <Image src={logo} alt={brand.name} width={70} height={40} />
-                    </a>
-
-                    <SearchBar placeholder="পণ্য খুঁজুন..." />
-
-                    <div className="flex items-center gap-3 md:gap-5 w-[25%] justify-end">
-
-
-                        <a
-                            href="/customer/order-track"
-                            aria-label="Track order"
-                            className="text-foreground transition-colors hover:text-[#EE2430]"
-                        >
-                            <PackageSearch className="h-6 w-6" />
-                        </a>
-                        <AuthNavButton />
-                        <CartButton />
-                    </div>
+                    <ul className="flex items-center gap-5">
+                        <li>
+                            <a href="/customer/order-track" className="flex items-center gap-1.5 hover:text-white transition-colors">
+                                <PackageSearch className="h-3.5 w-3.5" />
+                                Order Status
+                            </a>
+                        </li>
+                        <li>
+                            <AuthNavButton />
+                        </li>
+                    </ul>
                 </div>
             </div>
 
-            {/* ── Nav bar: sticks to top independently because it's a sibling, not a child ── */}
-            <nav className="sticky top-0 z-50 w-full bg-foreground text-white" aria-label="Main navigation">
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-4">
+            {/* ── Nav bar: logo, primary nav, search, cart — sticks to top independently ── */}
+            <nav className="sticky top-0 z-50 w-full bg-[#4B5563] border-t border-white/10" aria-label="Main navigation">
+                <div className="relative mx-auto flex max-w-7xl items-center gap-6 px-4 py-3">
 
                     <button
-                        className="flex items-center gap-2 py-3 lg:hidden"
+                        className="flex items-center gap-2 lg:hidden"
                         onClick={() => setMobileOpen(v => !v)}
                         aria-label="Toggle menu"
                         aria-expanded={mobileOpen}
                     >
-                        {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                        <span className="text-sm font-semibold">Menu</span>
+                        {mobileOpen ? <X className="h-5 w-5 text-white" /> : <Menu className="h-5 w-5 text-white" />}
                     </button>
 
-                    <ul className="hidden flex-wrap items-center lg:flex" role="menubar">
+                    <a href="/" className="flex shrink-0 items-center">
+                        <Image src={logo} alt={brand.name} width={110} height={36} priority />
+                    </a>
+
+                    <ul className="hidden flex-wrap items-center gap-1 lg:flex" role="menubar">
                         {nav.map((item) => (
                             <NavItemDesktop key={item.label} item={item} />
                         ))}
                     </ul>
 
-                    {/*<a*/}
-                    {/*    href="/flash-sale"*/}
-                    {/*    className="my-2 hidden shrink-0 items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-gray-900 sm:flex hover:bg-gray-100 transition-colors"*/}
-                    {/*>*/}
-                    {/*    <Zap className="h-3.5 w-3.5 fill-[#EE2430] text-[#EE2430]" />*/}
-                    {/*    ফ্ল্যাশ সেল*/}
-                    {/*</a>*/}
+                    <div className="ml-auto flex items-center gap-3">
+                        <div className="hidden sm:block">
+                            <SearchBar placeholder="Search Here" />
+                        </div>
+                        <CartButton />
+                    </div>
                 </div>
 
                 {mobileOpen && (
-                    <ul className="border-t border-white/10 px-4 pb-4 lg:hidden">
-                        {nav.map((item) => (
-                            <MobileNavItem key={item.label} item={item} />
-                        ))}
-                    </ul>
+                    <>
+                        <div className="border-t border-white/10 px-4 py-3 sm:hidden">
+                            <SearchBar placeholder="Search Here" />
+                        </div>
+                        <ul className="border-t border-white/10 px-4 pb-4 lg:hidden">
+                            {nav.map((item) => (
+                                <MobileNavItem key={item.label} item={item} />
+                            ))}
+                        </ul>
+                    </>
                 )}
             </nav>
         </>

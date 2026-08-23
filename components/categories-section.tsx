@@ -1,132 +1,147 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import Image from "next/image"
 import type { ApiCategory } from "@/app/page"
 import { SectionHeading } from "./section-heading"
 
 export function CategoriesSection({ categories }: { categories: ApiCategory[] }) {
     const trackRef = useRef<HTMLDivElement>(null)
-    const [isPaused, setIsPaused] = useState(false)
-    const resumeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
-    // Tracks whether the *next* scroll event was caused by our own rAF write,
-    // so we don't treat the auto-scroll's own movement as "user scrolled".
-    const isProgrammaticScroll = useRef(false)
+    const progressBarRef = useRef<HTMLDivElement>(null)
+    const [progress, setProgress] = useState(0)
 
-    // Duplicate the list so the track can loop seamlessly.
-    const loopItems = categories.length > 0 ? [...categories, ...categories] : []
+    // Mouse-drag state
+    const isDragging = useRef(false)
+    const dragStartX = useRef(0)
+    const dragStartScrollLeft = useRef(0)
+    const didDrag = useRef(false) // distinguishes a drag from a plain click on a card
 
-    const pauseThenResume = () => {
-        setIsPaused(true)
-        if (resumeTimeout.current) clearTimeout(resumeTimeout.current)
-        resumeTimeout.current = setTimeout(() => setIsPaused(false), 1200)
-    }
-
-    // Keep the auto-scroll loop running continuously; read isPaused from a ref
-    // inside the loop instead of as a dependency, so manual scrolling/dragging
-    // never tears down and restarts the animation frame loop.
-    const isPausedRef = useRef(isPaused)
-    useEffect(() => {
-        isPausedRef.current = isPaused
-    }, [isPaused])
-
-    useEffect(() => {
+    const updateProgress = () => {
         const track = trackRef.current
-        if (!track || categories.length === 0) return
-
-        const prefersReducedMotion = window.matchMedia(
-            "(prefers-reduced-motion: reduce)"
-        ).matches
-        if (prefersReducedMotion) return
-
-        const SPEED = 60 // pixels per second
-        let frameId: number
-        let lastTime: number | null = null
-
-        const step = (time: number) => {
-            if (lastTime === null) lastTime = time
-            const delta = time - lastTime
-            lastTime = time
-
-            if (track) {
-                const halfWidth = track.scrollWidth / 2
-
-                if (!isPausedRef.current) {
-                    isProgrammaticScroll.current = true
-                    track.scrollLeft += (SPEED * delta) / 1000
-
-                    if (track.scrollLeft >= halfWidth) {
-                        track.scrollLeft -= halfWidth
-                    } else if (track.scrollLeft < 0) {
-                        track.scrollLeft += halfWidth
-                    }
-                }
-            }
-
-            frameId = requestAnimationFrame(step)
-        }
-
-        frameId = requestAnimationFrame(step)
-        return () => cancelAnimationFrame(frameId)
-        // Only depends on categories.length now — the loop reads pause state live via ref.
-    }, [categories.length])
-
-    useEffect(() => {
-        return () => {
-            if (resumeTimeout.current) clearTimeout(resumeTimeout.current)
-        }
-    }, [])
-
-    const handleScroll = () => {
-        // If this scroll event was caused by our own auto-scroll write, ignore it.
-        if (isProgrammaticScroll.current) {
-            isProgrammaticScroll.current = false
+        if (!track) return
+        const maxScroll = track.scrollWidth - track.clientWidth
+        if (maxScroll <= 0) {
+            setProgress(0)
             return
         }
-        // Otherwise it's a real user gesture (drag, swipe, trackpad, wheel-via-handler).
-        pauseThenResume()
+        setProgress((track.scrollLeft / maxScroll) * 100)
+    }
+
+    const handleScroll = () => {
+        updateProgress()
+    }
+
+    // --- Mouse drag-to-scroll ---
+    const handleMouseDown = (e: React.MouseEvent) => {
+        const track = trackRef.current
+        if (!track) return
+        isDragging.current = true
+        didDrag.current = false
+        dragStartX.current = e.pageX - track.offsetLeft
+        dragStartScrollLeft.current = track.scrollLeft
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        const track = trackRef.current
+        if (!track || !isDragging.current) return
+        e.preventDefault()
+        const x = e.pageX - track.offsetLeft
+        const walk = x - dragStartX.current
+        if (Math.abs(walk) > 3) didDrag.current = true // treat as a drag, not a click
+        track.scrollLeft = dragStartScrollLeft.current - walk
+        updateProgress()
+    }
+
+    const endDrag = () => {
+        isDragging.current = false
+    }
+
+    // Suppress the click navigation on a card if the mousedown→mouseup was actually a drag.
+    const handleCardClick = (e: React.MouseEvent) => {
+        if (didDrag.current) {
+            e.preventDefault()
+            didDrag.current = false
+        }
+    }
+
+    // --- Click-to-seek on the progress bar itself ---
+    const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        const track = trackRef.current
+        const bar = progressBarRef.current
+        if (!track || !bar) return
+
+        const maxScroll = track.scrollWidth - track.clientWidth
+        if (maxScroll <= 0) return
+
+        const rect = bar.getBoundingClientRect()
+        const clickX = e.clientX - rect.left
+        const ratio = Math.min(Math.max(clickX / rect.width, 0), 1)
+
+        track.scrollTo({
+            left: ratio * maxScroll,
+            behavior: "smooth",
+        })
+
+        // scrollTo with smooth behavior updates scrollLeft asynchronously,
+        // so reflect the new position immediately for a snappier feel
+        setProgress(ratio * 100)
     }
 
     return (
         <section className="mx-auto max-w-7xl px-4 py-6">
-            <SectionHeading title="জনপ্রিয় ক্যাটাগরি" showMore={false} />
+            <SectionHeading title="What are you looking for?" showMore={false} />
+
             <div
                 ref={trackRef}
-                className="flex gap-3 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
-                onTouchStart={() => setIsPaused(true)}
-                onTouchEnd={pauseThenResume}
+                className="flex cursor-grab gap-4 overflow-x-auto select-none active:cursor-grabbing [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 onScroll={handleScroll}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={endDrag}
+                onMouseLeave={endDrag}
                 onWheel={(e) => {
                     if (!trackRef.current) return
-                    // Let a vertical wheel/trackpad gesture drive horizontal movement.
                     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
                         e.preventDefault()
-                        pauseThenResume()
                         trackRef.current.scrollLeft += e.deltaY
                     }
                 }}
             >
-                {loopItems.map((cat, idx) => (
+                {categories.map((cat) => (
                     <a
-                        key={`${cat.id}-${idx}`}
+                        key={cat.id}
                         href={`/category/${cat.slug}`}
-                        className="group flex w-24 shrink-0 flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 text-center transition-shadow hover:shadow-md sm:w-28 lg:w-32"
+                        onClick={handleCardClick}
+                        onDragStart={(e) => e.preventDefault()} // stop native image/link drag ghost
+                        className="group flex w-28 shrink-0 flex-col items-center gap-3 rounded-2xl border border-border bg-card p-4 text-center shadow-[1px_4px_10px_0px_var(--tw-shadow-color)] shadow-black/10 transition-shadow hover:shadow-[1px_4px_10px_0px_var(--tw-shadow-color)] hover:shadow-black/20 sm:w-32 lg:w-36"
                     >
-                        <div className="relative h-14 w-full">
+                        <div className="relative h-20 w-full">
                             <Image
                                 src={cat.icon || "/placeholder.svg"}
                                 alt={cat.name}
                                 fill
-                                className="object-contain transition-transform duration-200 group-hover:scale-110"
+                                className="pointer-events-none object-contain transition-transform duration-200 group-hover:scale-110"
                             />
                         </div>
-                        <span className="text-[11px] font-semibold leading-tight text-foreground">
+                        <span className="text-sm font-bold leading-tight text-foreground">
                             {cat.name}
                         </span>
                     </a>
                 ))}
+            </div>
+
+            <div
+                ref={progressBarRef}
+                onClick={handleProgressBarClick}
+                className="mx-auto mt-4 h-1.5 w-full max-w-[280px] cursor-pointer overflow-hidden rounded-full bg-blue-100"
+            >
+                <div
+                    className="h-full rounded-full bg-slate-400 transition-[width,transform] duration-100 ease-linear"
+                    style={{
+                        width: "40%",
+                        transform: `translateX(${Math.min(Math.max(progress, 0), 100) * 1.5}%)`,
+                    }}
+                />
             </div>
         </section>
     )
