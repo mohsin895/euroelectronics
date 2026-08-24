@@ -315,7 +315,7 @@ export function SiteHeader({
       hasDropdown: categoryColumns.length > 0,
       children: categoryColumns as unknown as NavChild[],
     },
-    { label: "Brands", href: "/brands" },
+    { label: "Brands", href: "/brand" },
     { label: "Campaigns", href: "/campaigns" },
     { label: "Support & Service", href: "/support-and-service" },
     { label: "About Us", href: "/about" },
