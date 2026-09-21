@@ -112,7 +112,7 @@ export function Brand({ brands }: { brands: Brand[] }) {
                     <a
                         key={`${brand.id}-${idx}`}
                         href={`/brand/${brand.slug}`}
-                        className="group flex w-24 shrink-0 flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 text-center transition-shadow hover:shadow-md sm:w-28 lg:w-32"
+                        className="group flex w-64 shrink-0 flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 text-center transition-shadow hover:shadow-md sm:w-28 lg:w-96"
                     >
                         <div className="relative h-14 w-full">
                             <Image

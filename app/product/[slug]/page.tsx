@@ -46,9 +46,7 @@ async function getProduct(slug: string): Promise<{
 // ===================== Fetch Categories =====================
 async function getCategories(): Promise<ApiCategory[]> {
   try {
-    const res = await fetch(`${DOMAIN}/categories`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(`${DOMAIN}/categories`);
 
     if (!res.ok) return [];
 
@@ -211,7 +209,7 @@ export default async function ProductPage({
         />
       </main>
 
-      <FeaturesBar features={data.features} />
+
 
       <SiteFooter brand={data.brand} footer={data.footer} />
 

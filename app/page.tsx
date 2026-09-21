@@ -3,7 +3,6 @@ import type { SiteData } from "@/lib/types"
 import { SiteHeader } from "@/components/site-header"
 import { HeroSection } from "@/components/hero-section"
 import { CategoriesSection } from "@/components/categories-section"
-import { FlashSaleSection, type FlashSaleDeal } from "@/components/flash-sale-section"
 import { ProductSectionBlock, type ApiProductSection } from "@/components/product-section-block"
 import { FeaturesBar } from "@/components/features-bar"
 import { SiteFooter } from "@/components/site-footer"
@@ -12,6 +11,7 @@ import { Brand } from "@/components/brand"
 
 import { getSocialLinks } from "@/lib/getSocials"
 import type { Footer } from "@/lib/types"
+import {HotOfferProduct, HotOfferSectopn} from "@/components/HotOffer";
 
 const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN ?? ""
 const data = siteData as SiteData
@@ -89,13 +89,13 @@ const staticFooterData: Omit<Footer, "socials"> = {
     newsletterText: "Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.",
     socialTitle: "FOLLOW US ON",
     supportLabel: "কাস্টমার সাপোর্ট",
-    copyright: "Copyright © 2026 Moto Empire BD. All Rights Reserved.",
+    copyright: "Copyright © 2026 Euro Electronics BD. All Rights Reserved.",
     developer: "Nelsistech",
 }
 
 const brand = {
-    name: "Moto Empire",
-    subtitle: "Moto Empire.",
+    name: "Euro Electronics",
+    subtitle: "Euro Electronics.",
     phone: "01732206841",
     email: "bdmotoempire@gmail.com",
     address: "274/3, Khandaker Plaza, 60 Feet Main Road, Mirpur, Dhaka-1216",
@@ -149,9 +149,9 @@ async function getBanner(): Promise<Banner | null> {
     return json.success && json.data?.length ? json.data[0] : null
 }
 
-async function getFlashDeals(): Promise<FlashSaleDeal[]> {
-    const json = await apiFetch<{ success: boolean; data: FlashSaleDeal[] }>(
-        "flash-deals/info", { success: false, data: [] }
+async function getFlashDeals(): Promise<HotOfferProduct[]> {
+    const json = await apiFetch<{ success: boolean; data: HotOfferProduct[] }>(
+        "products/todays-deal", { success: false, data: [] }
     )
     return json.success && Array.isArray(json.data) ? json.data : []
 }
@@ -190,12 +190,14 @@ export default async function HomePage() {
                 <HeroSection sliders={sliders} banner={banner} />
 
                 <CategoriesSection categories={categories} />
-                <FlashSaleSection deals={flashDeals} />
+             <HotOfferSectopn deals={flashDeals} />
+
+                <Brand brands={brands} />
                 {sections.map((section) => (
                     <ProductSectionBlock key={section.name} section={section} />
                 ))}
-                <Brand brands={brands} />
-                <FeaturesBar features={data.features} />
+
+
             </main>
             <SiteFooter brand={data.brand} footer={footer} />
             <FloatingButtons />

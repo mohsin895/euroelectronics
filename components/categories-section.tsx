@@ -113,7 +113,7 @@ export function CategoriesSection({ categories }: { categories: ApiCategory[] })
                         href={`/category/${cat.slug}`}
                         onClick={handleCardClick}
                         onDragStart={(e) => e.preventDefault()} // stop native image/link drag ghost
-                        className="group flex w-28 shrink-0 flex-col items-center gap-3 rounded-2xl border border-border bg-card p-4 text-center shadow-[1px_4px_10px_0px_var(--tw-shadow-color)] shadow-black/10 transition-shadow hover:shadow-[1px_4px_10px_0px_var(--tw-shadow-color)] hover:shadow-black/20 sm:w-32 lg:w-36"
+                        className="group flex w-28 shrink-0 flex-col items-center gap-3 rounded-2xl border border-border bg-card p-4 text-center shadow-[1px_4px_10px_0px_var(--tw-shadow-color)] shadow-black/10 transition-shadow hover:shadow-[1px_4px_10px_0px_var(--tw-shadow-color)] hover:shadow-black/20 sm:w-32 lg:w-42"
                     >
                         <div className="relative h-20 w-full">
                             <Image
